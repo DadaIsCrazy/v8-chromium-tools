@@ -2,7 +2,6 @@
 
 package Analyze;
 
-
 =head1
 
   This modules takes raw data as input, compares them, and prints
@@ -14,7 +13,6 @@ package Analyze;
   work and should look at the scripts using it rather.
 
 =cut
-
 
 use strict;
 use warnings;
@@ -219,6 +217,31 @@ sub output_data {
   }
   say "";
 
+  # Generating output for graph generation
+  if (exists $metrics{'C++:duration (avg)'} &&
+      exists $metrics{'JS:duration (avg)'} &&
+      exists $metrics{'old_space:effective_size (max)'} &&
+      exists $metrics{'v8-gc-scavenger (avg)'}) {
+    my %data_for_graph;
+    for my $bench (natsort keys %benchs) {
+      for my $exp (natsort keys %$data) {
+        $data_for_graph{perf}->{$exp} += $data->{$exp}->{'C++:duration (avg)'}->{$bench}->{mean};
+        $data_for_graph{perf}->{$exp} += $data->{$exp}->{'JS:duration (avg)'}->{$bench}->{mean};
+        $data_for_graph{memory}->{$exp} += $data->{$exp}->{'old_space:effective_size (max)'}->{$bench}->{mean};
+        $data_for_graph{scavenger}->{$exp} += $data->{$exp}->{'v8-gc-scavenger (avg)'}->{$bench}->{mean};
+      }
+    }
+    for my $exp (sort {$data_for_graph{memory}->{$b} <=> $data_for_graph{memory}->{$a}} keys %$data) {
+      sub compute_percent { return +($_[1]-$_[0])/$_[1]*100 }
+      printf "%s\t%.1f\t%.1f\t%.1f\n", $exp,
+        compute_percent($data_for_graph{perf}->{$exp}, $data_for_graph{perf}->{$ref}),
+        compute_percent($data_for_graph{memory}->{$exp}, $data_for_graph{memory}->{$ref}),
+        compute_percent($data_for_graph{scavenger}->{$exp}, $data_for_graph{scavenger}->{$ref});
+    }
+    say "";
+  }
+
+  # Printing column names if needed
   if ($SHORT_NAMES) {
     for my $exp (natsort keys %$data) {
       printf "%2d: $exp\n", $headers{$exp};
