@@ -26,14 +26,16 @@ Typically, to compare two flags, say "--gc-trace-freelists=0" and "--gc-trace-fr
 ```
 ./compare.pl --benchs=facebook,speedometer2,nytimes,reddit --name=my-benchmark
 ```
-    This will put the traces in the folder `tools/perf/results/my-benchmark`.
+
+   This will put the traces in the folder `tools/perf/results/my-benchmark`.
   
   3- run `summarize_results.pl`:
 
 ```
 ./summarize_results.pl --dir tools/perf/results/my-benchmark
 ```
-    This will parse the results, and nicely print them in your terminal
+
+   This will parse the results, and nicely print them in your terminal
 
 
 You probably shouldn't need to configure `compare.pl` to much (the `--nb-run=<number>` flag could be useful though, in order to chose how many times to repeat the benchmark).  
